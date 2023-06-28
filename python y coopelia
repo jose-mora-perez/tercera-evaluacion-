@@ -1,0 +1,168 @@
+Taller 2 - Interactuando con una escena en CoppeliaSim
+
+Autor: Claudio Morales D.
+Centro de Automatización y Robótica Inacap
+Santiago, Chile, enero 2023
+zeroMQ remote API: Información preliminar
+
+Entre las múltiples opciones de comunicación con CoppeliaSIm, la zeroMQ remote API entrega funcionalidades que facilitan la interacción con scripts de Python y con otros lenguajes de programación.
+Las instrucciones para instalar la librería se encuentra aquí: https://www.coppeliarobotics.com/helpFiles/en/zmqRemoteApiOverview.htm
+La descripción detallada de las funciones de la API se encuentra aquí: https://www.coppeliarobotics.com/helpFiles/en/apiFunctions.htm
+1. Instrucciones mínimas para comunicarse con CoppeliaSim
+Varios ejemplos del uso de la zeroMQ remote API pueden consultarse aquí: https://github.com/CoppeliaRobotics/zmqRemoteApi/tree/master/clients/python
+
+# 1. Importamos la librería para comunicaciones remotas
+# NOTA 1: Se requiere la instalación previa de pyzmq y cbor.
+# NOTA 2: Si la librería no está direccionada en el PATH de python, copiar 
+#         la carpeta de librería 'zmqRemoteApi' junto a este cuaderno de Jypyter. 
+#         'zmqRemoteApi' para Python se encuentra en:
+#                 *ruta de instalacion*\CoppeliaSimEdu\programming\zmqRemoteApi\clients\python\
+import zmqRemoteApi
+​
+# 2. Se crea un cliente para conectarse al servidor zmqRemoteApi de CoppeliaSim
+# los parámetros por defecto son: host='localhost', port=23000
+client = zmqRemoteApi.RemoteAPIClient()
+​
+# 3. Obtener el objeto remoto 'sim':
+sim = client.getObject('sim')
+​
+# 4. Llamar a una funcion de la API:
+h = sim.getObject('/base')
+​
+2. Usando la API remota para mover nuestro robot 
+# Cargamos la librería, creamos un cliente y obtenemos acceso a sim
+import zmqRemoteApi
+client = zmqRemoteApi.RemoteAPIClient()
+sim = client.getObject('sim')
+# Obtenemos los manejadores para las articulaciones y el actuador final
+joint1 = sim.getObject('/base/joint1')
+joint2 = sim.getObject('/base/joint2')
+joint3 = sim.getObject('/base/joint3')
+endEffector = sim.getObject('/base/connection')
+​
+print(joint1, joint2, joint3, endEffector)
+# Ahora movemos el robot
+sim.setJointTargetPosition(joint1, 0)
+​
+#include <Wire.h> // Si es necesario utilizar I2C
+#include <Joystick.h> // Biblioteca del Joystick
+​
+Joystick joystick; // Crear una instancia del Joystick
+​
+void setup() {
+  Serial.begin(9600); // Inicializar comunicación serial
+  joystick.begin(); // Inicializar Joystick
+}
+​
+void loop() {
+  // Leer coordenadas x, y y estado del botón del Joystick
+  int x = joystick.getX();
+  int y = joystick.getY();
+  int buttonState = joystick.getButton();
+​
+  // Enviar datos por el puerto serial
+  Serial.print("X:");
+  Serial.print(x);
+  Serial.print(",Y:");
+  Serial.print(y);
+  Serial.print(",Button:");
+  Serial.println(buttonState);
+​
+  delay(100); // Retardo para evitar lecturas demasiado frecuentes
+}
+​
+ontext.socket(zmq.REQ)
+socket.connect("tcp://127.0.0.1:5555")  # Reemplaza con la dirección correcta
+
+# Función para enviar comandos a CoppeliaSim
+def enviar_comando(comando):
+    socket.send_string(comando)
+    respuesta = socket.recv()
+    return respuesta
+
+# Control de las articulaciones y el actuador de ventosa
+def controlar_robot(articulaciones, actuador):
+    # Código para controlar las articulaciones y el actuador en CoppeliaSim
+    # Utiliza la función enviar_comando para enviar los comandos adecuados
+
+    # Ejemplo:
+    comando = f"SetJointPosition articulacion1 {articulaciones[0]}"
+    enviar_comando(comando)
+
+    comando = f"SetJointPosition articulacion2 {articulaciones[1]}"
+    enviar_comando(comando)
+
+    comando = f"SetActuatorState ventosa {actuador}"
+    enviar_comando(comando)
+
+# Loop principal
+while True:
+    # Leer los datos desde el puerto serial
+    datos_serial = input()  # Puedes utilizar una biblioteca como pySerial para la lectura real desde el puerto serial
+
+    # Procesar los datos
+    coordenadas = datos_serial.split(",")
+    x = float(coordenadas[0].split(":")[1])
+    y = float(coordenadas[1].split(":")[1])
+    boton = int(coordenadas[2].split(":")[1])
+
+    # Realizar el procesamiento y control del robot
+
+    # Ejemplo:
+    articulaciones = [x, y]  # Procesamiento de coordenadas del joystick
+    actuador = 1 if boton == 1 else 0  # Control del actuador de ventosa
+
+    controlar_robot(articulaciones, actuador)
+
+    time.sleep(0.1)  # Tasa de lectura de aproximadamente 100 ms
+
+import zmq
+import time
+​
+# Establecer la conexión con la escena de CoppeliaSim
+context = zmq.Context()
+socket = context.socket(zmq.REQ)
+socket.connect("tcp://127.0.0.1:5555")  # Reemplaza con la dirección correcta
+​
+# Función para enviar comandos a CoppeliaSim
+def enviar_comando(comando):
+    socket.send_string(comando)
+    respuesta = socket.recv()
+    return respuesta
+​
+# Control de las articulaciones y el actuador de ventosa
+def controlar_robot(articulaciones, actuador):
+    # Código para controlar las articulaciones y el actuador en CoppeliaSim
+    # Utiliza la función enviar_comando para enviar los comandos adecuados
+​
+    # Ejemplo:
+    comando = f"SetJointPosition articulacion1 {articulaciones[0]}"
+    enviar_comando(comando)
+​
+    comando = f"SetJointPosition articulacion2 {articulaciones[1]}"
+    enviar_comando(comando)
+​
+    comando = f"SetActuatorState ventosa {actuador}"
+    enviar_comando(comando)
+​
+# Loop principal
+while True:
+    # Leer los datos desde el puerto serial
+    datos_serial = input()  # Puedes utilizar una biblioteca como pySerial para la lectura real desde el puerto serial
+​
+    # Procesar los datos
+    coordenadas = datos_serial.split(",")
+    x = float(coordenadas[0].split(":")[1])
+    y = float(coordenadas[1].split(":")[1])
+    boton = int(coordenadas[2].split(":")[1])
+​
+    # Realizar el procesamiento y control del robot
+​
+    # Ejemplo:
+    articulaciones = [x, y]  # Procesamiento de coordenadas del joystick
+    actuador = 1 if boton == 1 else 0  # Control del actuador de ventosa
+​
+    controlar_robot(articulaciones, actuador)
+​
+    time.sleep(0.1)  # Tasa de lectura de aproximadamente 100 ms
+​
